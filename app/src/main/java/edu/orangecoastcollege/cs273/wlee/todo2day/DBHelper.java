@@ -2,14 +2,17 @@ package edu.orangecoastcollege.cs273.wlee.todo2day;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
 
 class DBHelper extends SQLiteOpenHelper {
 
     //TASK 1: DEFINE THE DATABASE VERSION, NAME AND TABLE NAME
     private static final String DATABASE_NAME = "ToDo2Day";
-    private static final String DATABASE_TABLE = "Tasks";
+    static final String DATABASE_TABLE = "Tasks";
     private static final int DATABASE_VERSION = 1;
 
 
@@ -54,6 +57,35 @@ class DBHelper extends SQLiteOpenHelper {
         // Step 3) Insert values into our database
         db.insert(DATABASE_TABLE, null, values);
 
+        // Step 4) close the database
+        db.close();
+
     }
 
+    // Create a method to get all the tasks in the database
+    public ArrayList<Task> getAllTasks(){
+
+        SQLiteDatabase db = this.getReadableDatabase(); // as above
+
+        // Step 2) Make a new ArrayList:
+        ArrayList<Task> allTasks = new ArrayList<>();
+
+        // Step 3) Query the database for all records (all rows) and all fields (all columns)
+        // The return type of a query is Cursor
+        Cursor results = db.query(DATABASE_TABLE, null, null, null, null, null, null); // new String[] {KEY_FIELD_ID} --> to be specific, on second null
+
+        // Step 4) Loop through the results, create Task objects, add to the ArrayList
+        if (results.moveToFirst()) // false if non exist
+        {
+            do {
+                int id = results.getInt(0);
+                String description = results.getString(1);
+                int isDone = results.getInt(2);
+                allTasks.add(new Task(id, description, isDone));
+            } while (results.moveToNext());
+        }
+
+        db.close();
+        return allTasks;
+    }
 }
